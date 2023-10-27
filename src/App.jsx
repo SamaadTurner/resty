@@ -1,35 +1,95 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useReducer, useState } from 'react';
+import axios from 'axios';
+
+import './App.scss';
+import Header from './Components/Header';
+import Footer from './Components/Footer';
+import Form from './Components/Form';
+import Results from './Components/Results';
+import History from './Components/History';
+
+export const initialState = {
+  data: null,
+  loading: false,
+  history: [],
+};
+
+export const dataReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case 'ADD DATA':
+      return {
+        ...state,
+        data: action.payload,
+      };
+    case 'LOADING':
+      return {
+        ...state,
+        loading: action.payload,
+      };
+    case 'HISTORY':
+      return {
+        ...state,
+        history: [...state.history, action.payload],
+      };
+    default:
+      return state;
+  };
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [requestParams, setRequestParams] = useState({
+    method: '',
+    url: '',
+    json: '',
+  });
+  const [state, dispatch] = useReducer(dataReducer, initialState);
+
+  const getData = async () => {
+    try {
+      if (requestParams.method === 'GET' && requestParams.url) {
+        let response = await axios.get(requestParams.url);
+        dispatch({ type: 'ADD DATA', payload: response.data });
+        let historyData = [requestParams, response.data];
+        dispatch({ type: 'HISTORY', payload: historyData });
+      }
+    } catch (error) {
+      dispatch({ type: 'ADD DATA', payload: 'no data available' });
+    } finally {
+      dispatch({ type: 'LOADING', payload: false });
+    }
+  };
+
+  const callApi = (requestParams) => {
+    setRequestParams(requestParams);
+  };
+
+  const historyClickHandler = (results) => {
+    dispatch({ type: 'ADD DATA', payload: results });
+  };
+
+  useEffect(() => {
+    dispatch({ type: 'LOADING', payload: true });
+    if (requestParams.method && requestParams.url) {
+      getData();
+    }
+  }, [requestParams]);
 
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <Header />
+      <div data-testid="app-method" className="divvy">
+        Request Method: {requestParams.method}
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
+      <div data-testid="app-url" className="divvy">
+        URL: {requestParams.url}
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <div className="divvy">Sent JSON: {requestParams.json}</div>
+      <Form handleApiCall={callApi} />
+      <Results data={state.data} loading={state.loading} />
+      <History history={state.history} historyClickHandler={historyClickHandler} />
+      <Footer />
     </>
-  )
+  );
 }
 
-export default App
+export default App;

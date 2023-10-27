@@ -1,8 +1,32 @@
-# React + Vite
+# Lab - Class 26 and 27
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+# Project: RESTy
 
-Currently, two official plugins are available:
+# Contributors: Samaad Turner
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+# Problem Domain 
+Phase 1: Scaffold and scss
+
+# UML:
+![lab26](lab26_UML.png)
+
+Phase 2: Use state hook  
+
+# UML
+![lab27](lab27_UML.png)
+
+Phase 3: Use effect hook
+
+# UML
+![lab28](lab28_UML.png)
+
+Phase 4: tracking every API call and storing it in history.
+
+# UML
+
+![lab29](lab29_UML.png)
+
+# HOW TO START:
+
+- Make sure necessary dependencies are installed
+- npm run dev in terminal (once in correct directory)
