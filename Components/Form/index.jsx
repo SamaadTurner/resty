@@ -2,7 +2,8 @@ import { useState } from 'react';
 
 import './Form.scss';
 
-const Form = (props) => {
+function Form(props){
+
   const [url, setUrl] = useState('https://pokeapi.co/api/v2/pokemon');
   const [method, setMethod] = useState('GET');
   const [json, setJson] = useState('');
@@ -15,7 +16,7 @@ const Form = (props) => {
       json: json,
     };
     props.handleApiCall(formData);
-  };
+  }
 
   return (
     <>
@@ -38,10 +39,7 @@ const Form = (props) => {
   );
 }
 
-
 export default Form;
-
-
 
 
 

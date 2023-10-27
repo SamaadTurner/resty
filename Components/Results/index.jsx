@@ -1,8 +1,6 @@
 import './Results.scss';
 import JSONPretty from 'react-json-pretty';
-import './Results.scss';
-import JSONPrettyTheme from 'react-json-pretty';
-
+const JSONPrettyTheme = require('react-json-pretty/dist/adventure_time');
 
 function Results(props){
   return (

@@ -1,78 +1,95 @@
-import { useState, useEffect} from 'react'
+import { useEffect, useReducer, useState } from 'react';
 import axios from 'axios';
-import './App.css'
-import Header from '../Components/Header/index.jsx';
-import Footer from '../Components/Footer/index.jsx';
-import Form from '../Components/Form/index.jsx';
-import Results from '../Components/Results/index.jsx';
+
+import './App.scss';
+import Header from './Components/Header';
+import Footer from './Components/Footer';
+import Form from './Components/Form';
+import Results from './Components/Results';
+import History from './Components/History';
+
+export const initialState = {
+  data: null,
+  loading: false,
+  history: [],
+};
+
+export const dataReducer = (state = initialState, action) => {
+  switch (action.type) {
+    case 'ADD DATA':
+      return {
+        ...state,
+        data: action.payload,
+      };
+    case 'LOADING':
+      return {
+        ...state,
+        loading: action.payload,
+      };
+    case 'HISTORY':
+      return {
+        ...state,
+        history: [...state.history, action.payload],
+      };
+    default:
+      return state;
+  };
+}
 
 function App() {
-  const [data, setData] = useState(null);
-  const [requestParams, setRequestParams] = useState({});
-  const [loading, setLoading] = useState(false);
-  useEffect(() => {
-    console.log('An Event Occured');
+  const [requestParams, setRequestParams] = useState({
+    method: '',
+    url: '',
+    json: '',
   });
+  const [state, dispatch] = useReducer(dataReducer, initialState);
 
-  useEffect(() => {
-    console.log('An Event Occured');
-  });
-
-  useEffect(() => {
-    async function getData(){
-      if(requestParams.method === 'GET'){
-        let response = await axios.get(requestParams.url)
-        setData(response.data.results)
+  const getData = async () => {
+    try {
+      if (requestParams.method === 'GET' && requestParams.url) {
+        let response = await axios.get(requestParams.url);
+        dispatch({ type: 'ADD DATA', payload: response.data });
+        let historyData = [requestParams, response.data];
+        dispatch({ type: 'HISTORY', payload: historyData });
       }
-      if(requestParams.method === 'POST'){
-        let response = await axios.post(requestParams.url, requestParams.json)
-        setData(response.data.results)
-      }
-      if(requestParams.method === 'PUT'){
-        let response = await axios.put(requestParams.url, requestParams.json)
-        setData(response.data.results)
-      }
-      if(requestParams.method === 'DELETE'){
-        let response = await axios.delete(requestParams.url)
-        setData(response.data.results)
-      }
+    } catch (error) {
+      dispatch({ type: 'ADD DATA', payload: 'no data available' });
+    } finally {
+      dispatch({ type: 'LOADING', payload: false });
     }
-    if(requestParams.method && requestParams.url){
+  };
+
+  const callApi = (requestParams) => {
+    setRequestParams(requestParams);
+  };
+
+  const historyClickHandler = (results) => {
+    dispatch({ type: 'ADD DATA', payload: results });
+  };
+
+  useEffect(() => {
+    dispatch({ type: 'LOADING', payload: true });
+    if (requestParams.method && requestParams.url) {
       getData();
     }
-  }, [requestParams])
+  }, [requestParams]);
 
-
-  const apiCall = async (requestParams) => {
-    setLoading(true);
-    const data = {
-      count: 2,
-      results: [
-        { name: 'fake thing 1', url: 'http://fakethings.com/1' },
-        { name: 'fake thing 2', url: 'http://fakethings.com/2' },
-      ],
-
-    };
-    setData(data);
-    setLoading(false);
-    setRequestParams(requestParams);
-  }
   return (
     <>
-         <Header />
-      <div data-testid="app-method" className="divvy">Request Method: {requestParams.method}</div>
-      <div data-testid="app-url" className="divvy">URL: {requestParams.url}</div>
-      { 
-        requestParams.json
-        ? <div className="divvy">Sent JSON: {requestParams.json}</div>
-        : <div></div>
-      }
-      <Form handleApiCall={apiCall} />
-      <Results data={data} loading={loading} />
+      <Header />
+      <div data-testid="app-method" className="divvy">
+        Request Method: {requestParams.method}
+      </div>
+      <div data-testid="app-url" className="divvy">
+        URL: {requestParams.url}
+      </div>
+      <div className="divvy">Sent JSON: {requestParams.json}</div>
+      <Form handleApiCall={callApi} />
+      <Results data={state.data} loading={state.loading} />
+      <History history={state.history} historyClickHandler={historyClickHandler} />
       <Footer />
- 
     </>
   );
 }
 
-export default App
+export default App;
